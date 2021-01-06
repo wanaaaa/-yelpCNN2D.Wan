@@ -65,7 +65,8 @@ def split_train_test(top_data_df, test_size=0.3, shuffle_state=True):
     # Call the train_test_split
     X_train, X_test, Y_train, Y_test = split_train_test(top_data_df)
 
-def make_word2vec_model(top_data_df_small, padding=True, sg=1, min_count=1, size=10, workers=3, window=3):
+def make_word2vec_model(top_data_df_small, padding=True, sg=1, min_count=1,
+                        size=10, workers=3, window=3):
     if  padding:
         # print(len(top_data_df_small))
         temp_df = pd.Series(top_data_df_small['stemmed_tokens']).values

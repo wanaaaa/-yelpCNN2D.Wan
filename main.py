@@ -1,4 +1,5 @@
 from funClass import *
+from sklearn.metrics import classification_report
 
 top_data_df = wordProcess()
 
@@ -67,3 +68,30 @@ f.close()
 # print("Probs")
 # print(probs)
 # print(torch.argmax(probs, dim=1).cpu().numpy()[0])
+
+bow_cnn_predictions = []
+original_lables_cnn_bow = []
+cnn_model.eval()
+loss_df = pd.read_csv('./plots/cnn_class_big_loss_with_padding.csv')
+print(loss_df.columns)
+# loss_df.plot('loss')
+
+max_sen_len = top_data_df.stemmed_tokens.map(len).max()
+padding_idx = w2vmodel.wv.vocab['pad'].index
+
+with torch.no_grad():
+    for index, row in X_test.iterrows():
+        bow_vec = make_word2vec_vector_cnn(row['stemmed_tokens'],
+                                           w2vmodel, max_sen_len, padding_idx)
+
+        probs = cnn_model(bow_vec)
+        _, predicted = torch.max(probs.data, 1)
+        bow_cnn_predictions.append(predicted.cpu().numpy()[0])
+        original_lables_cnn_bow.append(make_target(Y_test['sentiment'][index]).cpu().numpy()[0])
+print(classification_report(original_lables_cnn_bow,bow_cnn_predictions))
+loss_file_name = './plots/' + 'cnn_class_big_loss_with_padding.csv'
+loss_df = pd.read_csv(loss_file_name)
+print(loss_df.columns)
+plt_500_padding_30_epochs = loss_df[' loss'].plot()
+fig = plt_500_padding_30_epochs.get_figure()
+fig.savefig('plots/' + 'loss_plt_500_padding_30_epochs.pdf')
